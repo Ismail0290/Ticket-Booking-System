@@ -1,13 +1,14 @@
-FROM python:3.10-slim
+FROM python:3.13-slim-bookworm
 
-WORKDIR /app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+WORKDIR /code
 
-# Copy project
-COPY . .
+COPY req.txt /code/
 
-# Run migrations and start server
-CMD ["gunicorn", "ticket_booking.wsgi:application", "--bind", "0.0.0.0:8000"]
+RUN pip install --no-cache-dir -r req.txt
+
+COPY . /code/
+
+CMD ["gunicorn","bookstore.wsgi:application", "--bind", "0.0.0.0:8000"]

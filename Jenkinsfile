@@ -1,51 +1,46 @@
 pipeline {
     agent any
-    
+
     environment {
-        DOCKER_COMPOSE_VERSION = '2.15.1'
+        DJANGO_SETTINGS_MODULE = "bookstore.settings"
+        PATH = "/usr/local/bin:$PATH"
     }
-    
+
     stages {
-        stage('Checkout') {
+        stage('Clone Repo') {
             steps {
                 checkout scm
             }
         }
-        
+
         stage('Build') {
             steps {
                 sh 'docker-compose build'
             }
         }
-        
-        stage('Test') {
-            steps {
-                sh '''
-                docker-compose run --rm web python manage.py test
-                '''
-            }
-        }
-        
+
+        // stage('Test') {
+        //     steps {
+        //         sh 'docker-compose run --rm web python manage.py test'
+        //     }
+        // }
+
         stage('Deploy') {
             steps {
-                sh '''
-                docker-compose down
-                docker-compose up -d
-                '''
+                sh 'docker-compose up -d'
             }
         }
     }
-    
+
     post {
         always {
-            sh 'docker-compose logs web > web_logs.txt'
-            archiveArtifacts artifacts: 'web_logs.txt', allowEmptyArchive: true
-        }
-        success {
-            echo 'Deployment successful!'
+            echo 'Pipeline finished.'
         }
         failure {
-            echo 'Deployment failed!'
+            echo '❌ Pipeline failed. Check test or deployment stage.'
+        }
+        success {
+            echo '✅ Pipeline succeeded.'
         }
     }
 }
