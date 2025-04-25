@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if show %}Edit{% else %}Add{% endif %} Show - Admin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'show_list' %}">Ticket Booking System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'booking_history' %}">My Bookings</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'admin_show_list' %}">Admin Panel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'logout' %}">Logout ({{ user.username }})</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h3 class="mb-0">{% if show %}Edit{% else %}Add{% endif %} Show</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-{{ message.tags }}">
+                                    {{ message }}
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                        
+                        <form method="post" action="{% if show %}{% url 'admin_show_update' show.id %}{% else %}{% url 'admin_show_create' %}{% endif %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Title</label>
+                                <input type="text" class="form-control" id="title" name="title" value="{% if show %}{{ show.title }}{% endif %}" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="4" required>{% if show %}{{ show.description }}{% endif %}</textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="date" class="form-label">Date</label>
+                                    <input type="date" class="form-control" id="date" name="date" value="{% if show %}{{ show.date|date:'Y-m-d' }}{% endif %}" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="time" class="form-label">Time</label>
+                                    <input type="time" class="form-control" id="time" name="time" value="{% if show %}{{ show.time|time:'H:i' }}{% endif %}" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="venue" class="form-label">Venue</label>
+                                <input type="text" class="form-control" id="venue" name="venue" value="{% if show %}{{ show.venue }}{% endif %}" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="total_seats" class="form-label">Total Seats</label>
+                                    <input type="number" class="form-control" id="total_seats" name="total_seats" value="{% if show %}{{ show.total_seats }}{% else %}100{% endif %}" min="1" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="price_per_seat" class="form-label">Price Per Seat ($)</label>
+                                    <input type="number" class="form-control" id="price_per_seat" name="price_per_seat" value="{% if show %}{{ show.price_per_seat }}{% endif %}" min="0.01" step="0.01" required>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <a href="{% url 'admin_show_list' %}" class="btn btn-secondary">Cancel</a>
+                                <button type="submit" class="btn btn-primary">{% if show %}Update{% else %}Create{% endif %} Show</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

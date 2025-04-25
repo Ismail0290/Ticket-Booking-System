@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ show.title }} - Ticket Booking System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .seat {
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            display: inline-block;
+            text-align: center;
+            line-height: 40px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .available {
+            background-color: #28a745;
+            color: white;
+        }
+        .unavailable {
+            background-color: #dc3545;
+            color: white;
+            cursor: not-allowed;
+        }
+        .selected {
+            background-color: #007bff;
+            color: white;
+        }
+        .screen {
+            height: 10px;
+            background-color: #6c757d;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'show_list' %}">Ticket Booking System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'booking_history' %}">My Bookings</a>
+                        </li>
+                        {% if user.is_staff %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'admin_show_list' %}">Admin Panel</a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Logout ({{ user.username }})</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-md-8">
+                <h1>{{ show.title }}</h1>
+                <p class="text-muted">{{ show.date|date:"F d, Y" }} at {{ show.time }}</p>
+                
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Show Details</h5>
+                        <p class="card-text">{{ show.description }}</p>
+                        <p class="card-text"><strong>Venue:</strong> {{ show.venue }}</p>
+                        <p class="card-text"><strong>Price:</strong> ${{ show.price_per_seat }} per seat</p>
+                        <p class="card-text"><strong>Available Seats:</strong> {{ show.available_seats }}</p>
+                    </div>
+                </div>
+                
+                {% if user.is_authenticated %}
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">Select Seats</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="text-center mb-4">
+                                <div class="screen"></div>
+                                <p class="text-muted">SCREEN</p>
+                            </div>
+                            
+                            <form method="post" action="{% url 'booking_create' show.id %}" id="booking-form">
+                                {% csrf_token %}
+                                <div class="seat-selection text-center">
+                                    {% for row in seats_matrix %}
+                                        <div class="row-seats mb-2">
+                                            {% for seat in row %}
+                                                {% if seat.available %}
+                                                    <div class="seat available" data-id="{{ seat.id }}" onclick="toggleSeat(this)">
+                                                        {{ seat.row }}{{ seat.number }}
+                                                    </div>
+                                                {% else %}
+                                                    <div class="seat unavailable">
+                                                        {{ seat.row }}{{ seat.number }}
+                                                    </div>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <div class="d-flex justify-content-center mb-3">
+                                        <div class="me-3">
+                                            <div class="seat available" style="cursor: default;"></div>
+                                            <span>Available</span>
+                                        </div>
+                                        <div class="me-3">
+                                            <div class="seat selected" style="cursor: default;"></div>
+                                            <span>Selected</span>
+                                        </div>
+                                        <div>
+                                            <div class="seat unavailable" style="cursor: default;"></div>
+                                            <span>Booked</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mt-4">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <p><strong>Selected Seats:</strong> <span id="selected-seats">None</span></p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <p><strong>Total Price:</strong> $<span id="total-price">0.00</span></p>
+                                        </div>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary" id="book-button" disabled>Book Tickets</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        Please <a href="{% url 'login' %}">login</a> to book tickets for this show.
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Booking Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <p>To book tickets for this show:</p>
+                        <ol>
+                            <li>Select your desired seats from the seating chart</li>
+                            <li>Review your selection and total price</li>
+                            <li>Click "Book Tickets" to confirm your booking</li>
+                        </ol>
+                        <p class="text-muted">Note: Once booked, tickets cannot be cancelled or refunded.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const pricePerSeat = {{ show.price_per_seat }};
+        const selectedSeats = new Set();
+        
+        function toggleSeat(element) {
+            const seatId = element.dataset.id;
+            
+            if (element.classList.contains('selected')) {
+                element.classList.remove('selected');
+                element.classList.add('available');
+                selectedSeats.delete(seatId);
+            } else {
+                element.classList.remove('available');
+                element.classList.add('selected');
+                selectedSeats.add(seatId);
+            }
+            
+            updateBookingInfo();
+            updateForm();
+        }
+        
+        function updateBookingInfo() {
+            const selectedSeatsElement = document.getElementById('selected-seats');
+            const totalPriceElement = document.getElementById('total-price');
+            const bookButton = document.getElementById('book-button');
+            
+            if (selectedSeats.size === 0) {
+                selectedSeatsElement.textContent = 'None';
+                totalPriceElement.textContent = '0.00';
+                bookButton.disabled = true;
+            } else {
+                const seatElements = document.querySelectorAll('.seat.selected');
+                const seatLabels = Array.from(seatElements).map(el => el.textContent.trim());
+                
+                selectedSeatsElement.textContent = seatLabels.join(', ');
+                totalPriceElement.textContent = (selectedSeats.size * pricePerSeat).toFixed(2);
+                bookButton.disabled = false;
+            }
+        }
+        
+        function updateForm() {
+            // Remove any existing hidden inputs
+            const existingInputs = document.querySelectorAll('input[name="seats"]');
+            existingInputs.forEach(input => input.remove());
+            
+            // Add new hidden inputs for each selected seat
+            const form = document.getElementById('booking-form');
+            selectedSeats.forEach(seatId => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'seats';
+                input.value = seatId;
+                form.appendChild(input);
+            });
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

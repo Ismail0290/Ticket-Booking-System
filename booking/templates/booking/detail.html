@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Details - Ticket Booking System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'show_list' %}">Ticket Booking System</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'booking_history' %}">My Bookings</a>
+                        </li>
+                        {% if user.is_staff %}
+                            <li class="nav-item">
+                                <a class="nav-link" href="{% url 'admin_show_list' %}">Admin Panel</a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Logout ({{ user.username }})</a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'register' %}">Register</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h3 class="mb-0">Booking Confirmed</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="text-center mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="currentColor" class="bi bi-check-circle-fill text-success" viewBox="0 0 16 16">
+                                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                            </svg>
+                        </div>
+                        
+                        <h4>Booking Details</h4>
+                        <table class="table">
+                            <tr>
+                                <th>Booking ID:</th>
+                                <td>{{ booking.id }}</td>
+                            </tr>
+                            <tr>
+                                <th>Show:</th>
+                                <td>{{ booking.show.title }}</td>
+                            </tr>
+                            <tr>
+                                <th>Date & Time:</th>
+                                <td>{{ booking.show.date|date:"F d, Y" }} at {{ booking.show.time }}</td>
+                            </tr>
+                            <tr>
+                                <th>Venue:</th>
+                                <td>{{ booking.show.venue }}</td>
+                            </tr>
+                            <tr>
+                                <th>Seats:</th>
+                                <td>{{ booking.seat_details }}</td>
+                            </tr>
+                            <tr>
+                                <th>Total Price:</th>
+                                <td>${{ booking.total_price }}</td>
+                            </tr>
+                            <tr>
+                                <th>Booking Time:</th>
+                                <td>{{ booking.booking_time|date:"F d, Y H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <th>Status:</th>
+                                <td>
+                                    <span class="badge bg-success">{{ booking.status|title }}</span>
+                                </td>
+                            </tr>
+                        </table>
+                        
+                        <div class="alert alert-info">
+                            <p class="mb-0">Please arrive at least 30 minutes before the show starts. Show this booking confirmation at the venue to collect your tickets.</p>
+                        </div>
+                        
+                        <div class="text-center mt-4">
+                            <a href="{% url 'booking_history' %}" class="btn btn-primary me-2">View All Bookings</a>
+                            <a href="{% url 'show_list' %}" class="btn btn-secondary">Browse More Shows</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
