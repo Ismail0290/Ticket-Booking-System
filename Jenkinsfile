@@ -19,11 +19,11 @@ pipeline {
             }
         }
 
-        // stage('Test') {
-        //     steps {
-        //         sh 'docker-compose run --rm web python manage.py test'
-        //     }
-        // }
+        stage('Test') {
+            steps {
+                sh 'docker-compose run --rm web python manage.py tests'
+            }
+        }
 
         stage('Deploy') {
             steps {
