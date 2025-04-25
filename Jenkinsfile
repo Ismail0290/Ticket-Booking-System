@@ -21,7 +21,7 @@ pipeline {
 
         stage('Test') {
             steps {
-                sh 'docker-compose run --rm web python manage.py tests'
+                sh 'docker-compose run --rm web python manage.py test'
             }
         }
 
